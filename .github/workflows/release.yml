@@ -6,6 +6,7 @@ on:
 
 jobs:
   release:
+    if: github.event_name == 'push' && contains(toJson(github.event.commits), 'chore:update changelog') == false
     runs-on: ubuntu-latest
     steps:
       # Checkout repository. By setting `fetch-depth: 0`, this fetch will include all history and tags
@@ -25,27 +26,14 @@ jobs:
       - name: Bump version
         run: npx standard-version --tag-prefix=
       
-      # Add the remote repository and push the bumped version and changelog
-      #- name: Commit changes
-      #  run: |
-      #    git remote add gh-origin https://${GITHUB_ACTOR}:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
-      #    git push --force gh-origin HEAD:master --tags
-      #  env:
-      #    GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # Commit changes
-      # - name: Commit changes
-      #  uses: stefanzweifel/git-auto-commit-action@v4
-      #  with:
-      #    commit_message: "chore(release): Update changelog"
-      #    push_options: --force
-
+      # Create a pull request from the changes
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          commit-message: "chord: bump version and changelog"
-          title: 'Update changelog'
+          commit-message: 'chore: bump version and changelog'
+          title: 'chore:update changelog'
+          delete-branch: true
           body: >
             This PR was auto-generated to create a changelog for new version
 
